@@ -11,47 +11,104 @@
     <title>TIC TAC TOE GAME</title>
     <script type="module" crossorigin src="./assets/index-BbJmHOgW.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BMXBmcQY.css">
+
+    <style>
+      /* Basic styling for the buttons */
+      #installButton, #openButton {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px 0;
+        display: none; /* Initially hidden */
+      }
+
+      /* Styling for the toggle arrow */
+      #toggleButton {
+        cursor: pointer;
+        color: #007bff;
+        font-size: 24px;
+        margin: 10px 0;
+        text-align: center;
+      }
+
+      /* Container for the buttons */
+      #buttonContainer {
+        display: none; /* Initially hidden */
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
 
-    <!-- Install/Open App Button -->
-    <button id="installButton" style="padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border: none; border-radius: 5px; cursor: pointer; display: none;">
-      Install/Open App
-    </button>
+    <!-- Toggle Button -->
+    <div id="toggleButton">⬇️</div>
+
+    <!-- Container for Install/Open Buttons -->
+    <div id="buttonContainer">
+      <button id="installButton">Install App</button>
+      <button id="openButton">Open App</button>
+    </div>
 
     <script>
       let deferredPrompt;
       const installButton = document.getElementById('installButton');
+      const openButton = document.getElementById('openButton');
+      const toggleButton = document.getElementById('toggleButton');
+      const buttonContainer = document.getElementById('buttonContainer');
+
+      // Show/hide the button container on toggle click
+      toggleButton.addEventListener('click', () => {
+        if (buttonContainer.style.display === 'none' || buttonContainer.style.display === '') {
+          buttonContainer.style.display = 'block';
+          toggleButton.textContent = '⬆️';
+        } else {
+          buttonContainer.style.display = 'none';
+          toggleButton.textContent = '⬇️';
+        }
+      });
 
       // Listen for the beforeinstallprompt event
       window.addEventListener('beforeinstallprompt', (e) => {
           // Prevent the mini-infobar from appearing on mobile
           e.preventDefault();
-          // Stash the event so it can be triggered later.
           deferredPrompt = e;
-          // Show the install button
+          // Show the install button if the app isn't installed
           installButton.style.display = 'block';
-
-          installButton.addEventListener('click', () => {
-              // Show the install prompt
-              deferredPrompt.prompt();
-              // Wait for the user to respond to the prompt
-              deferredPrompt.userChoice.then((choiceResult) => {
-                  if (choiceResult.outcome === 'accepted') {
-                      console.log('User accepted the install prompt');
-                  } else {
-                      console.log('User dismissed the install prompt');
-                  }
-                  deferredPrompt = null;
-              });
-          });
       });
 
-      // Optionally, listen for the appinstalled event
-      window.addEventListener('appinstalled', () => {
-          console.log('PWA was installed');
-          installButton.style.display = 'none';
+      // Check if the app is already installed
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+          // Show the open button if the app is installed
+          openButton.style.display = 'block';
+      } else {
+          installButton.style.display = 'block';
+      }
+
+      // Install Button click event
+      installButton.addEventListener('click', () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+              installButton.style.display = 'none';
+              openButton.style.display = 'block';
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+          });
+        }
+      });
+
+      // Open Button click event
+      openButton.addEventListener('click', () => {
+        window.location.href = '/'; // Navigate to your app's main page
       });
     </script>
   </body>
